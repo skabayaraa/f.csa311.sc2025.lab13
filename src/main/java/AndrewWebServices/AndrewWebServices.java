@@ -10,10 +10,14 @@ public class AndrewWebServices {
     RecSys recommender;
     PromoService promoService;
 
-    public AndrewWebServices(Database database, RecSys recommender, PromoService promoService) {
-        this.database = database;
+    public AndrewWebServices(Database database2, RecSys recommender, PromoService promoService) {
+        this.database = database2;
         this.recommender = recommender;
         this.promoService = promoService;
+    }
+
+    public AndrewWebServices(InMemoryDatabase db, Object recommender2, Object promoService2) {
+        //TODO Auto-generated constructor stub
     }
 
     /*
@@ -23,9 +27,9 @@ public class AndrewWebServices {
      * 
      * TODO: use a fake to test this method
      */
-    public boolean logIn(String accountName, int password) {
+    public boolean logIn(String accountName, String password) {
         long startTime = System.currentTimeMillis();
-        if (this.database.getPassword(accountName) == password) {
+        if (String.valueOf(this.database.getPassword(accountName)).equals(password)) {
             long endTime = System.currentTimeMillis();
             System.out.println("Login success! Took " + (endTime - startTime) / 1000 + " seconds");
             return true;
@@ -61,4 +65,27 @@ public class AndrewWebServices {
     public void sendPromoEmail(String email) {
         promoService.mailTo(email);
     }
+
+    // Removed duplicate method logIn(String, String)
+
+    public boolean logIn(String accountName, int i) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'logIn'");
+    }
+    public interface Database {
+        void addUser(String username, String password);
+        char[] getPassword(String accountName);
+        boolean validateUser(String username, String password);
+    }
+    
+    public interface RecommendationEngine {
+        String getRecommendation(String userId);
+    }
+    
+    public interface EmailService {
+        void sendPromoEmail(String userId);
+    }
+    
+
+
 }

@@ -14,6 +14,7 @@ import javax.mail.internet.MimeMessage;
  * 
  * DO NOT MODIFY this class.
  */
+
 public class PromoService {
     public void mailTo(String email) {
         String to = email;

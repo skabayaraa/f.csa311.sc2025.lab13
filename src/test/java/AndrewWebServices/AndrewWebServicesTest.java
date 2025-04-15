@@ -1,25 +1,32 @@
 package AndrewWebServices;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import java.util.concurrent.ExecutorService;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.internal.configuration.SpyAnnotationEngine;
+
+import AndrewWebServices.AndrewWebServices.EmailService;
 
 public class AndrewWebServicesTest {
-    Database database;
-    RecSys recommender;
-    PromoService promoService;
+    InMemoryDatabase database;
+    SpyAnnotationEngine recommender;
+    EmailService mockEmailService;
     AndrewWebServices andrewWebService;
 
     @Before
     public void setUp() {
-        // You need to use some mock objects here
-        database = new Database(); // We probably don't want to access our real database...
-        recommender = new RecSys();
-        promoService = new PromoService();
+        database = new InMemoryDatabase();
+        recommender = new SpyAnnotationEngine();
+        mockEmailService = mock(EmailService.class); // mock ашиглаж байна
 
-        andrewWebService = new AndrewWebServices(database, recommender, promoService);
+        andrewWebService = new AndrewWebServices(database, recommender, mockEmailService);
     }
 
     @Test
@@ -45,4 +52,34 @@ public class AndrewWebServicesTest {
         // How should we test that no email has been sent in certain situations (like right after logging in)?
         // Hint: is there something from Mockito that seems useful here?
     }
+
+    @Test
+public void testLogInWithFakeDatabase() {
+    InMemoryDatabase db = new InMemoryDatabase();
+    db.addUser("enkhsaruul", "1234");
+
+    AndrewWebServices service = new AndrewWebServices(db, null, null);
+    assertTrue(service.logIn("enkhsaruul", "1234"));
+    assertFalse(service.logIn("someone", "wrongpass"));
+}
+
+@Test
+public void testGetRecommendationWithStub() {
+    RecommendationEngine stubEngine = new RecommendationEngine();
+
+    AndrewWebServices service = new AndrewWebServices(null, stubEngine, null);
+    assertEquals("Try our new Premium features!", service.getRecommendation("premiumUser"));
+    assertEquals("Check out our basic features.", service.getRecommendation("regularUser"));
+}
+
+@Test
+public void testSendPromoEmailWithMock() {
+    ExecutorService mockEmailService = mock(ExecutorService.class);
+
+    AndrewWebServices service = new AndrewWebServices(null, null, mockEmailService);
+    service.sendPromoEmail("user123");
+
+    ((AndrewWebServices) verify(mockEmailService)).sendPromoEmail("user123");
+}
+
 }
