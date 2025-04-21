@@ -34,7 +34,17 @@ public class AndrewWebServicesTest {
         // This is taking way too long to test
         assertTrue(andrewWebService.logIn("Scotty", 17214));
     }
+    @Test
+public void testSendPromoEmailWithMock() {
+    // 1. Хуурмаг имэйл сервис үүсгэнэ
+    EmailService mockEmailService = mock(EmailService.class);
 
+    // 2. Имэйл илгээнэ (жишээ нь: логик функц дуудах)
+    mockEmailService.sendPromoEmail("enkhsaruul@example.com");
+
+    // 3. Тухайн имэйл хаяг руу илгээсэн эсэхийг шалгана
+    verify(mockEmailService).sendPromoEmail("enkhsaruul@example.com");
+}
     @Test
     public void testGetRecommendation() {
         // This is taking way too long to test
@@ -54,7 +64,7 @@ public class AndrewWebServicesTest {
     }
 
     @Test
-public void testLogInWithFakeDatabase() {
+public void testLogInWithFakeDatabaseAndService() {
     InMemoryDatabase db = new InMemoryDatabase();
     db.addUser("enkhsaruul", "1234");
 
@@ -65,7 +75,16 @@ public void testLogInWithFakeDatabase() {
 
 @Test
 public void testGetRecommendationWithStub() {
-    RecommendationEngine stubEngine = new RecommendationEngine();
+    RecommendationEngine stubEngine = new RecommendationEngine() {
+        @Override
+        public String getRecommendation(String user) {
+            if ("premiumUser".equals(user)) {
+                return "Try our new Premium features!";
+            } else {
+                return "Check out our basic features.";
+            }
+        }
+    };
 
     AndrewWebServices service = new AndrewWebServices(null, stubEngine, null);
     assertEquals("Try our new Premium features!", service.getRecommendation("premiumUser"));
@@ -73,13 +92,31 @@ public void testGetRecommendationWithStub() {
 }
 
 @Test
-public void testSendPromoEmailWithMock() {
+public void testSendPromoEmailWithMockExecutorService() {
     ExecutorService mockEmailService = mock(ExecutorService.class);
 
     AndrewWebServices service = new AndrewWebServices(null, null, mockEmailService);
     service.sendPromoEmail("user123");
 
     ((AndrewWebServices) verify(mockEmailService)).sendPromoEmail("user123");
+}
+
+@Test
+public void testLogInWithFakeDatabase() {
+    // Хуурамч мэдээллийн сан үүсгэнэ
+    InMemoryDatabase fakeDb = new InMemoryDatabase();
+    
+    // Хэрэглэгч нэмнэ
+    fakeDb.addUser("enkhsaruul", "pass123");
+    
+    // Хэрэглэгчийг зөв мэдээллээр шалгана
+    assertTrue(fakeDb.validateUser("enkhsaruul", "pass123"));
+
+    // Буруу нууц үгтэй шалгахад false
+    assertFalse(fakeDb.validateUser("enkhsaruul", "wrongpass"));
+
+    // Байхгүй хэрэглэгчийг шалгахад false
+    assertFalse(fakeDb.validateUser("someone", "pass123"));
 }
 
 }
